@@ -124,7 +124,7 @@ frontEndDir = os.path.join( "client" , "build" )
 
 app = Flask(__name__, static_url_path= '' , static_folder=frontEndDir)
 CORS(app)
-app.config["DEBUG"] = True
+# app.config["DEBUG"] = True
 # app.run()
 
 user = User()
@@ -149,7 +149,7 @@ def receivedAudioClip():
 
 @app.route('/video', methods=['POST'])
 def receivedVideoClip():
-    # Todoxx
+    # Todo
     pass
 
 @app.route('/', methods=['GET'])
