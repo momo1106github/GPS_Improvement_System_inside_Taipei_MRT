@@ -8,10 +8,10 @@ import speech_recognition as sr
 import numpy as np
 import math
 import sys
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, render_template
 from flask_cors import CORS
 import soundfile as sf
-
+import os
 def get_station_info(filename):
 
     station_list = []
@@ -61,7 +61,6 @@ class User:
 def broadcast_recognition(in_file):
     return True
     
-           
 def speech_recognition(user, audio_clip):
     user.add_audio(audio_clip)
 
@@ -121,9 +120,9 @@ def received_audio_clip_service(user, audio_file):
     print ("user location: ", user.location)
     return jsonify(user.location)
     
+frontEndDir = os.path.join( "client" , "build" )
 
-
-app = Flask(__name__)
+app = Flask(__name__, static_url_path= '' , static_folder=frontEndDir)
 CORS(app)
 app.config["DEBUG"] = True
 # app.run()
@@ -137,16 +136,16 @@ def receivedOrintation():
 
 @app.route('/audio', methods=['POST'])
 def receivedAudioClip():
-    out_file = "../output/out.wav"
+    out_file = "./output/out.wav"
     print(request.files['wav_file'])
     file = request.files['wav_file']
     file.save(out_file)
     # sf.write('./tmp.wav', file, 16000)
     data, rate = librosa.load(out_file)
     file = (np.iinfo(np.int32).max * (data/np.abs(data).max())).astype(np.int32)
-    wavfile.write("../output/out.wav", rate, file) # rate: 44100 
+    wavfile.write("./output/out.wav", rate, file) # rate: 44100 
     print("done sending")
-    return received_audio_clip_service(user, "../output/out.wav")
+    return received_audio_clip_service(user, "./output/out.wav")
 
 @app.route('/video', methods=['POST'])
 def receivedVideoClip():
@@ -158,7 +157,7 @@ def hello():
     # with open('./index.html', newline='', encoding="utf-8") as webPage:
     #     buffer = webPage.read()
     # return buffer
-    return "Hello World"
+    return app.send_static_file("index.html")
         
 # @app.route("/map.js")
 # def map():

@@ -1,0 +1,13 @@
+gunicorn
+flask
+csv
+noisereduce
+librosa
+scipy.io
+speech_recognition
+numpy
+math
+sys
+flask_cors
+soundfile
+os
