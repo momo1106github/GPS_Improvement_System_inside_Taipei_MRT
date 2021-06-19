@@ -149,7 +149,7 @@ def receivedAudioClip():
 
 @app.route('/video', methods=['POST'])
 def receivedVideoClip():
-    # Todo
+    # Todoxx
     pass
 
 @app.route('/', methods=['GET'])
