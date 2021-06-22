@@ -8,7 +8,7 @@ const useRoute = () => {
   const sendAudio = async (blob) => {
     let formData = new FormData();
     formData.append("wav_file", blob.blob);
-    const result = await axios.post("http://localhost:5000/audio", formData, {
+    const result = await axios.post("https://obscure-spire-00084.herokuapp.com/audio", formData, {
       headers: {
         Accept: "*/*",
         "Content-Type": "multipart/form-data",
