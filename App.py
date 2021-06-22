@@ -12,6 +12,7 @@ from flask import Flask, request, jsonify, send_from_directory, render_template,
 from flask_cors import CORS
 import soundfile as sf
 import os
+import audioread
 
 def get_station_info(filename):
 
@@ -148,11 +149,23 @@ def receivedAudioClip():
     file = request.files['wav_file']
     file.save(out_file)
     # sf.write('./tmp.wav', file, 16000)
-    data, rate = librosa.load(out_file)
-    file = (np.iinfo(np.int32).max * (data/np.abs(data).max())).astype(np.int32)
-    wavfile.write("./output/out.wav", rate, file) # rate: 44100 
-    print("done sending")
-    return received_audio_clip_service(user, "./output/out.wav")
+    try:
+        data, rate = librosa.load(out_file)
+        file = (np.iinfo(np.int32).max * (data/np.abs(data).max())).astype(np.int32)
+        wavfile.write("./output/out.wav", rate, file) # rate: 44100 
+        print("done sending")
+        return received_audio_clip_service(user, "./output/out.wav")
+    except:
+        with audioread.audio_open(out_file) as f:
+            print(f.channels, f.samplerate, f.duration)
+            rate = f.samplerate
+            for buf in f:
+                data = buf
+
+                file = (np.iinfo(np.int32).max * (data/np.abs(data).max())).astype(np.int32)
+                wavfile.write("./output/out.wav", rate, file) # rate: 44100 
+                print("done sending")
+                return received_audio_clip_service(user, "./output/out.wav")
 
 @app.route('/video', methods=['POST'])
 def receivedVideoClip():
