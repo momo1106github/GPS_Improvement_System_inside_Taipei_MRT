@@ -12,6 +12,7 @@ from flask import Flask, request, jsonify, send_from_directory, render_template,
 from flask_cors import CORS
 import soundfile as sf
 import os
+
 def get_station_info(filename):
 
     station_list = []
@@ -37,7 +38,7 @@ class User:
         self.audio_cnt = 0
         self.audios = []
         self.videos = []
-        self.ories = []
+        self.oris = []
     
     def add_audio(self, audio):
         while (len(self.audios) >= 5):
@@ -70,8 +71,6 @@ def speech_recognition(user, audio_clip):
     with MRT as source:
         r.adjust_for_ambient_noise(source)
         audio = r.record(source)
-        
-    
     
     result = []
     # only recognizes chinese
@@ -82,16 +81,16 @@ def speech_recognition(user, audio_clip):
     
     try:
         alterResult = r.recognize_google(audio, show_all=True, language='zh-TW')
+        print("alterResult:", alterResult)
     except:
         print("Alter result failed")
-    print("alterresult:", alterResult)
+
+    print("bestResult: ", result)
     output = None
-    print(result)
     for station in STATION_INFO:
         if str(result).find(station['station_name_tw']) != -1:
             # print(f'station name:{station['station_name_tw']}')
             output = station
-    
     
     # out_file = "./output/" + in_file[:-4] + "__speech_recognized.wav"
     # with open(out_file, 'w') as f:
