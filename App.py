@@ -8,7 +8,7 @@ import speech_recognition as sr
 import numpy as np
 import math
 import sys
-from flask import Flask, request, jsonify, send_from_directory, render_template
+from flask import Flask, request, jsonify, send_from_directory, render_template, url_for, redirect
 from flask_cors import CORS
 import soundfile as sf
 import os
@@ -129,6 +129,14 @@ CORS(app)
 
 user = User()
 
+
+@app.route('/', methods=['GET'])
+def hello():
+    # with open('./index.html', newline='', encoding="utf-8") as webPage:
+    #     buffer = webPage.read()
+    # return buffer
+    return app.send_static_file("index.html")
+
 @app.route('/orientation', methods=['POST'])
 def receivedOrintation():
     # orientation = request.body.orientation
@@ -152,13 +160,8 @@ def receivedVideoClip():
     # Todo
     pass
 
-@app.route('/', methods=['GET'])
-def hello():
-    # with open('./index.html', newline='', encoding="utf-8") as webPage:
-    #     buffer = webPage.read()
-    # return buffer
-    return app.send_static_file("index.html")
-        
+if __name__ == '__main__':
+    app.run()
 # @app.route("/map.js")
 # def map():
 #     return send_from_directory("./", "map.js")
