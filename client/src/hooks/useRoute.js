@@ -12,7 +12,7 @@ const useRoute = () => {
     let formData = new FormData();
     formData.append("wav_file", blob.blob);
     // console.log(blob);
-    const result = await axios.post("http://localhost:5000/audio", formData, {
+    const result = await axios.post("/audio", formData, {
       headers: {
         Accept: "*/*",
         "Content-Type": "multipart/form-data",
@@ -28,7 +28,7 @@ const useRoute = () => {
     const file = dataURLtoFile(imgSrc);
     formData.append('image_file', file);
     // console.log(formData.get("image_file"));
-    const result = await axios.post("http://localhost:5000/image", formData, {
+    const result = await axios.post("/image", formData, {
       headers: {
         'Content-Type': `multipart/form-data;`,
       }
@@ -38,7 +38,7 @@ const useRoute = () => {
 
   const sendBearing = async (bearing) =>{
     console.log("send Bearing", bearing);
-    const result = await axios.post("http://localhost:5000/bearing", { bearing: bearing });
+    const result = await axios.post("/bearing", { bearing: bearing });
     console.log(result);
   }
 
