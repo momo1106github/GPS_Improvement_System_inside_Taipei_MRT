@@ -7,3 +7,4 @@ scipy
 SpeechRecognition
 flask-cors
 SoundFile
+pydub
