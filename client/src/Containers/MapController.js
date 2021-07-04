@@ -4,6 +4,7 @@ import Map from "../Components/Map";
 import Recorder from "./Recorder";
 import useRoute from "../hooks/useRoute";
 import useSensor from "../hooks/useSensor";
+import Webcam from "./WebCam";
 // import orientation from "../Functions/Orientation";
 
 mapboxgl.accessToken =
@@ -12,11 +13,12 @@ mapboxgl.accessToken =
 const MapController = () => {
   const mapContainer = useRef(null);
   const map = useRef(null);
-  const { lat, lng, sendAudio } = useRoute();
+  const { lat, lng, sendAudio, sendPic, sendBearing } = useRoute();
   const [marker, setMarker] = useState(null);
   const [zoom, setZoom] = useState(13);
   const { bearing, orientation } = useSensor();
-
+  const [lastBearing, setLastBearing] = useState(0);
+  const bearingThreshhold = 50;
   // const onMove = () => {
   //   setLng(map.current.getCenter().lng.toFixed(4));
   //   setLat(map.current.getCenter().lat.toFixed(4));
@@ -34,6 +36,11 @@ const MapController = () => {
   useEffect(() => {
     if (!map.current) return;
     map.current.setBearing(bearing);
+    console.log("bearing: ",bearing, lastBearing);
+    if(Math.abs(bearing - lastBearing) > bearingThreshhold){
+        setLastBearing(bearing)
+        sendBearing(bearing);
+      }
   }, [bearing]);
 
   useEffect(() => {
@@ -55,11 +62,11 @@ const MapController = () => {
         .addTo(map.current)
     );
   });
-
   return (
     <>
       <Map mapContainer={mapContainer} lng={lng} lat={lat} zoom={zoom}></Map>
       <Recorder sendAudio={sendAudio} />
+      <Webcam sendPic={sendPic}/>
     </>
   );
 };

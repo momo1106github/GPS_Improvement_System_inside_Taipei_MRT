@@ -14,7 +14,7 @@ const Recorder = ({ sendAudio }) => {
   };
 
   const onData = (recordedBlob) => {
-    console.log("chunk of real-time data is: ", recordedBlob);
+    // console.log("chunk of real-time data is: ", recordedBlob);
     // console.log(recordedBlob)
     // sendAudio(recordedBlob)
   };

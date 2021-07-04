@@ -13,6 +13,8 @@ from flask_cors import CORS
 import soundfile as sf
 import os
 import audioread
+from pydub import AudioSegment
+from src import scene_recognition
 
 def get_station_info(filename):
 
@@ -145,17 +147,19 @@ def receivedOrintation():
 @app.route('/audio', methods=['POST'])
 def receivedAudioClip():
     out_file = "./output/out.wav"
-    print(request.files['wav_file'])
+    print(request.files, request.files['wav_file'])
     file = request.files['wav_file']
     file.save(out_file)
-    # sf.write('./tmp.wav', file, 16000)
+    
     try:
+    # sf.write('./tmp.wav', file, 16000)
         data, rate = librosa.load(out_file)
         file = (np.iinfo(np.int32).max * (data/np.abs(data).max())).astype(np.int32)
         wavfile.write("./output/out.wav", rate, file) # rate: 44100 
         print("done sending")
         return received_audio_clip_service(user, "./output/out.wav")
     except:
+
         with audioread.audio_open(out_file) as f:
             print(f.channels, f.samplerate, f.duration)
             rate = f.samplerate
@@ -167,14 +171,24 @@ def receivedAudioClip():
                 print("done sending")
                 return received_audio_clip_service(user, "./output/out.wav")
 
-@app.route('/video', methods=['POST'])
-def receivedVideoClip():
+@app.route('/image', methods=['POST'])
+def receivedImage():
     # Todo
-    pass
+    print(request.files)
+    file = request.files['image_file']
+    file.save("image.jpg")
+    result = scene_recognition.scene_recognition("image.jpg")
 
+    print("result: ", result)
+
+    return "OK"
+
+@app.route('/bearing', methods=['POST'])
+def receivedBearing():
+    # Todo
+    print(request.data.bearing)
+
+    return "OK"
 if __name__ == '__main__':
     app.run()
-# @app.route("/map.js")
-# def map():
-#     return send_from_directory("./", "map.js")
         
