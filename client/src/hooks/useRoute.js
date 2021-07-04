@@ -18,7 +18,7 @@ const useRoute = () => {
         "Content-Type": "multipart/form-data",
       },
     });
-
+    
     setLng(parseFloat(result.data[0]));
     setLat(parseFloat(result.data[1]));
   };
