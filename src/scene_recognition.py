@@ -3,7 +3,7 @@ from PIL import Image, ImageOps
 import numpy as np
 import sys
 
-CLASS = {"In MRT": 0, "At Station": 1}
+CLASS = {"ON_MRT": 0, "AT_STATION": 1}
 
 def scene_recognition(img):
     if not img: 
@@ -21,7 +21,7 @@ def scene_recognition(img):
     data = np.ndarray(shape=(1, 224, 224, 3), dtype=np.float32)
 
     # Replace this with the path to your image
-    # image = Image.open(img)
+    image = Image.open(img)
 
     #resize the image to a 224x224 with the same strategy as in TM2:
     #resizing the image to be at least 224x224 and then cropping from the center
@@ -43,8 +43,8 @@ def scene_recognition(img):
     # run the inference
     prediction = model.predict(data)
     
-    print (prediction, type(prediction[0]), prediction)
-    return prediction[0][CLASS["At Station"]] > prediction[0][CLASS["In MRT"]]        
+    print (prediction, prediction[0][CLASS["AT_STATION"]], prediction[0][CLASS["ON_MRT"]])
+    return prediction[0][CLASS["AT_STATION"]] > prediction[0][CLASS["ON_MRT"]]        
 
 if __name__ == '__main__':
     scene_recognition(sys.argv[1])

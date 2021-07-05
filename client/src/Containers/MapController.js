@@ -66,7 +66,7 @@ const MapController = () => {
     <>
       <Map mapContainer={mapContainer} lng={lng} lat={lat} zoom={zoom}></Map>
       <Recorder sendAudio={sendAudio} />
-      <Webcam sendPic={sendPic} videoConstraints={{facingMode: { exact: "environment" }}}/>
+      <Webcam sendPic={sendPic}/>
     </>
   );
 };
