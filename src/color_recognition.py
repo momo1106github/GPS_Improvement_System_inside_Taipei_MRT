@@ -53,7 +53,7 @@ def color_recognition(img, colors):
             ratio[color] = cv2.countNonZero(hsvMask) / (image.size/3)
 
             # Print the color percent, use 2 figures past the decimal point
-            print(f'{color} pixel percentage:', np.round(ratio[color], 2))
+            print(f'{color} pixel percentage:', ratio[color])
 
             # numpy's hstack is used to stack two images horizontally,
             # so you see the various images generated in one figure:

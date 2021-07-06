@@ -64,8 +64,9 @@ class MRTLocationService:
         
     
     def received_audio_clip_service(self, files, file_key):
-        # if self.user.state == USER_STATE["IN_STATION"]:
-        #     return jsonify(self.user.location)
+        if self.user.state == USER_STATE["IN_STATION"]:
+            print("User in station, no Speech Recognition Service")
+            return jsonify(self.user.location)
 
         audio_file = "./output/out.wav"
         file = files[file_key]
