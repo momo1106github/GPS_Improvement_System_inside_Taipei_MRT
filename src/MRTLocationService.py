@@ -64,8 +64,8 @@ class MRTLocationService:
         
     
     def received_audio_clip_service(self, files, file_key):
-        if self.user.state == USER_STATE["IN_STATION"]:
-            return jsonify(self.user.location)
+        # if self.user.state == USER_STATE["IN_STATION"]:
+        #     return jsonify(self.user.location)
 
         audio_file = "./output/out.wav"
         file = files[file_key]
@@ -80,14 +80,24 @@ class MRTLocationService:
         recognize_success = recognized_station != None
         same_station = self.user.current_station != recognized_station
 
-        print("83:", recognize_success, same_station, self.user.in_current_line(recognized_station), self.user)
+        # print("83:", recognize_success, same_station, self.user.in_current_line(recognized_station), self.user)
 
-        if recognize_success and same_station and self.user.in_current_line(recognized_station):
+        if recognize_success and same_station:
             self.user.location = [recognized_station["lon"], recognized_station["lat"]]
             self.user.last_station = self.user.current_station
             self.user.current_station = recognized_station["station_name_tw"]
         
-        print ("user location: ", self.user.location)
+        print("================")
+        print("Speech Recognition Result: ")
+        print("recognized station: ", recognized_station["station_name_tw"])
+        print("user location: ", self.user.location)
+        if self.user.state == 0:
+            print("user state: In Station")
+        else:
+            print("user state: On MRT")
+        print("user station_line_color: ", self.user.current_line)
+        print("================")
+
         return jsonify(self.user.location)
 
     def received_station_image_service(self, files, file_key):
@@ -98,13 +108,24 @@ class MRTLocationService:
         scene_recognition_result = scene_recognition(image_file)
         self.user.state = USER_STATE["IN_STATION"] if scene_recognition_result else USER_STATE["ON_MRT"]
         print("IN Station: ", scene_recognition_result)
-        print("user: ", self.user)
         # if self.user.state == USER_STATE["IN_STATION"] and self.user.current_station in TRANSPORT_STATIONS:
+        
         if self.user.state == USER_STATE["IN_STATION"]:
-            color_recognition_result = color_recognition(image_file, TRANSPORT_STATIONS["台北車站"])
+            color_recognition_result = color_recognition(image_file, TRANSPORT_STATIONS[self.user.current_station])
             self.user.current_line = color_recognition_result[0]        
             print("Dominant Color: ", color_recognition_result)
-            
+        
+        print("================")
+        print("Scene Recignition Result: ")
+        if self.user.state == USER_STATE["IN_STATION"]:
+            print("Dominant Color: ", color_recognition_result)
+        print ("user location: ", self.user.location)
+        if self.user.state == 0:
+            print ("user state: In Station")
+        else:
+            print ("user state: On MRT")
+        print ("user station_line_color: ", self.user.current_line)
+        print("================")
         return jsonify(self.user.location)
     
 

@@ -52,11 +52,11 @@ def speech_recognition(user, audio_clip, stations_info):
     
     try:
         alter_results = r.recognize_google(audio, show_all=True, language='zh-TW')
-        print("alterResult:", alter_results)
+        # print("alterResult:", alter_results)
     except:
         print("Alter result failed")
 
-    print("bestResult: ", result)
+    # print("bestResult: ", result)
     output = None
     
     for station in stations_info:
@@ -71,7 +71,7 @@ def speech_recognition(user, audio_clip, stations_info):
     # out_file = "./output/" + in_file[:-4] + "__speech_recognized.wav"
     # with open(out_file, 'w') as f:
     #     f.write(str(output))
-    print("Best output: ", output)
+    # print("Best output: ", output)
     return output
     
 def station_recognition(user, audio_clip):
