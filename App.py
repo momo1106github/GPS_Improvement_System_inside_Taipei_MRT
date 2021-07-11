@@ -92,8 +92,8 @@ def receivedBearing():
     print("received bearing: ", request.data.bearing)
     return service.received_user_orientation_service(request.data.bearing)
 
-if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=8989,ssl_context=('adhoc'))
+# if __name__ == '__main__':
+    # app.run(host="0.0.0.0", port=8989,ssl_context=('adhoc'))
     # app.debug = True
     # app.run()
         
