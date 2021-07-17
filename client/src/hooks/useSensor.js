@@ -18,7 +18,7 @@ const useSensor = () => {
           const euler = new THREE.Euler();
           const quaternion = new THREE.Quaternion(...sensor.quaternion);
           // console.log(euler.setFromQuaternion(quaternion, "XYZ").z);
-          setBearing(45 * euler.setFromQuaternion(quaternion, "XYZ").z);
+          setBearing(180 / Math.PI * euler.setFromQuaternion(quaternion, "XYZ").z);
         });
         sensor.addEventListener("error", (event) => {
           if (event.error.name === "NotReadableError") {

@@ -60,7 +60,7 @@ def speech_recognition(user, audio_clip, stations_info):
     output = None
     
     for station in stations_info:
-        if user.current_station["line_code"] and user.current_station["line_code"] != station['line_code']:
+        if user.current_station and user.current_station["line_code"] != station['line_code']:
             continue
         if str(result).find(station['station_name_tw']) != -1:
             output = station

@@ -9,7 +9,6 @@ from flask import Flask, request, jsonify, send_from_directory, render_template,
 from flask_cors import CORS
 import soundfile as sf
 from pydub import AudioSegment
-
 from .speech_recognition import *
 from .scene_recognition import *
 from .color_recognition import *
@@ -17,12 +16,12 @@ from .stations_info import TRANSPORT_STATIONS, LINES_COLOR, STATION_LINES
 
 USER_STATE = {"ON_MRT": 1, "IN_STATION": 0}
 
-STATION_LINE_ORIENTATIONS = {"動物園": [{"orientation": 0, "line": "文湖線", "direction": 1}, {"orientation": 180, "line": "文湖線", "direction": -1}],
-                             "大安": [{"orientation": 0, "line": "文湖線", "direction": 1}, {"orientation": 180, "line": "文湖線", "direction": -1}, 
-                                     {"orientation": 0, "line": "淡水信義線", "direction": 1}, {"orientation": 180, "line": "淡水信義線", "direction": -1}],
-                             "木柵": [{"orientation": 0, "line": "文湖線", "direction": 1}, {"orientation": 180, "line": "文湖線", "direction": -1}],
-                             "忠孝復興": [{"orientation": 0, "line": "文湖線", "direction": 1}, {"orientation": 180, "line": "文湖線", "direction": -1}, 
-                                     {"orientation": 0, "line": "板南線", "direction": 1}, {"orientation": 180, "line": "板南線", "direction": -1}],
+STATION_LINE_ORIENTATIONS = {"動物園": [{"orientation": 0.0, "line": "文湖線", "direction": 1}, {"orientation": 180.0, "line": "文湖線", "direction": -1}],
+                             "大安": [{"orientation": 0.0, "line": "文湖線", "direction": 1}, {"orientation": 180.0, "line": "文湖線", "direction": -1}, 
+                                     {"orientation": 0.0, "line": "淡水信義線", "direction": 1}, {"orientation": 180.0, "line": "淡水信義線", "direction": -1}],
+                             "木柵": [{"orientation": 0.0, "line": "文湖線", "direction": 1}, {"orientation": 180.0, "line": "文湖線", "direction": -1}],
+                             "忠孝復興": [{"orientation": 0.0, "line": "文湖線", "direction": 1}, {"orientation": 180.0, "line": "文湖線", "direction": -1}, 
+                                     {"orientation": 0.0, "line": "板南線", "direction": 1}, {"orientation": 180.0, "line": "板南線", "direction": -1}],
                              }
 
 def get_station_info(filename):
@@ -42,7 +41,6 @@ class User:
         self.state = USER_STATE["ON_MRT"]
         self.current_station = {}
         self.last_station = {}
-        self.current_line = ""
         self.line_direction = 1
         self.time_since_last_station = 0
         # self.audio_cnt = 0
@@ -56,7 +54,7 @@ class User:
     #     self.audios.append(audio)
 
     def in_current_line(self, recognized_station):
-        return self.current_line != "" and self.current_line in TRANSPORT_STATIONS[recognized_station.line_name]
+        return self.current_station != "" and self.current_station["line_code"] in TRANSPORT_STATIONS[recognized_station.line_name]
 
 class MRTLocationService:
     def __init__(self):
@@ -79,16 +77,12 @@ class MRTLocationService:
 
         recognized_station = speech_recognition(self.user, audio_file, self.stations_info)
 
-        # print("83:", recognize_success, same_station, self.user.in_current_line(recognized_station), self.user)
+        # print("83:", recognize_success, same_station, self.user.in_current_station["line_code"](recognized_station), self.user)
 
         if recognized_station:
             self.user.location = [recognized_station["lon"], recognized_station["lat"]]
             self.user.last_station = self.user.current_station
             self.user.current_station = recognized_station
-            if recognized_station["station_name_tw"] not in TRANSPORT_STATIONS:
-                self.user.current_line = LINES_COLOR[recognized_station["line_name"]]
-            else:
-                self.user.current_line = LINES_COLOR[self.user.last_station["line_name"]] if self.user.last_station else ""
                 
         print("================")
         print("Speech Recognition Result: ")
@@ -99,7 +93,8 @@ class MRTLocationService:
             print("user state: In Station")
         else:
             print("user state: On MRT")
-        print("user station_line_color: ", self.user.current_line)
+        if self.user.current_station: 
+            print("user station_line_color: ", self.user.current_station["line_code"])
         print("================")
 
         return jsonify(self.user.location)
@@ -118,7 +113,11 @@ class MRTLocationService:
         color_recognition_result = None
         if self.user.state == USER_STATE["IN_STATION"] and self.user.current_station["station_name_tw"] in TRANSPORT_STATIONS:
             color_recognition_result = color_recognition(image_file, TRANSPORT_STATIONS[self.user.current_station["station_name_tw"]])
-            self.user.current_line = color_recognition_result[0]        
+            for station in self.stations_info:
+                if station["station_name_tw"] == self.user.current_station["station_name_tw"] and \
+                    station["line_code"] == color_recognition_result[0]:
+                    self.current_station = self.last_station = station
+
             print("Dominant Color: ", color_recognition_result)
         
         print("================")
@@ -130,27 +129,26 @@ class MRTLocationService:
             print ("user state: In Station")
         else:
             print ("user state: On MRT")
-        print ("user station_line_color: ", self.user.current_line)
+        print ("user station_line_color: ", self.user.current_station["line_code"])
         print("================")
         return jsonify(self.user.location)
     
 
     def received_user_orientation_service(self, orientation):
-        print("received", orientation)
-        if self.user.state == USER_STATE["ON_MRT"]:
-            pass
-        
-        orientations = STATION_LINE_ORIENTATIONS["動物園"]
-        orientation = int(orientation + 180) % 360
+        if self.user.state == USER_STATE["IN_STATION"]:
+            orientations = STATION_LINE_ORIENTATIONS["動物園"]
+            if self.user.line_direction and self.user.current_station:
+                print("before orientation:", self.user.line_direction, " ", self.user.current_station["line_code"])
 
+            for ori in orientations:
+                theta = (ori["orientation"] - orientation) * math.pi / 180
+                if 0.5 <= math.cos(theta) and self.user.current_station["line_code"] == LINES_COLOR[ori["line"]]:
+                    self.user.line_direction = ori["direction"]
+                    break        
+                    
+            print("oriented user:", self.user.line_direction, " ", self.user.current_station["line_code"])
 
-        print("before orientation:", self.user.line_direction, " ", self.user.current_line)
-
-        for ori in orientations:
-            bound = [( ori["orientation"] - 60 + 360 ) % 360, ( ori["orientation"] + 60 + 360 ) % 360]
-            if bound[0] <= orientation <= bound[1] and self.user.current_line == LINES_COLOR[ori["line"]]:
-                self.user.line_direction = ori["direction"]
-                break        
-                
-        print("oriented user:", self.user.line_direction, " ", self.user.current_line)
         return jsonify(self.user.location)
+    
+    # TODO change current station according to line direction and estimated time 
+    
