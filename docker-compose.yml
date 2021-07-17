@@ -1,0 +1,9 @@
+version: "3.7"
+
+services:
+  server:
+    build: .
+    container_name: server
+    # restart: always
+    ports:
+      - 8989:8989

@@ -11,3 +11,4 @@ pydub
 tensorflow
 Pillow
 opencv-python
+cryptography
