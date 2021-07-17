@@ -1,6 +1,3 @@
-from .speech_recognition import *
-from .scene_recognition import *
-from .color_recognition import *
 from scipy.io import wavfile
 import csv
 import noisereduce as nr
@@ -11,41 +8,22 @@ import sys
 from flask import Flask, request, jsonify, send_from_directory, render_template, url_for, redirect
 from flask_cors import CORS
 import soundfile as sf
-import os
-import audioread
 from pydub import AudioSegment
+
+from .speech_recognition import *
+from .scene_recognition import *
+from .color_recognition import *
+from .stations_info import TRANSPORT_STATIONS, LINES_COLOR, STATION_LINES
 
 USER_STATE = {"ON_MRT": 1, "IN_STATION": 0}
 
-TRANSPORT_STATIONS = {
-    "台北車站": ["R", "BL"], "忠孝新生": ["BL", "O"], "民權西路": ["R", "O"], "中山": ["R", "G"], "松江南京": ["O", "G"],
-    "大安": ["BR", "R"], "忠孝復興": ["BR", "BL"], "南港展覽館": ["BR", "BL"], "大坪林": ["G", "Y"], "景安": ["O", "Y"], "頭前庄": ["O", "Y"],
-    "古亭": ["G", "O"], "中正紀念堂": ["R", "G"], "西門": ["BL", "G"], "東門": ["O", "R"], 
-    "板橋": ["BL", "Y"], "新埔": ["BL", "Y"], "新埔民生": ["BL", "Y"]
-}
-
-LINES_COLOR = { 
-    "松山新店線":"G", "淡水信義線": "R", "板南線": "BL", "文湖線": "BR", "中和新蘆線": "O", "環狀線": "Y" 
-}
-
-LINES_ORIENTATIONS = {
-    "文湖線": ["動物園", "木柵", "萬芳社區", "萬芳醫院", "辛亥", "麟光", "六張犁", "科技大樓", "大安", "忠孝復興", 
-                "南京復興", "中山國中", "松山機場", "大直", "劍南路", "西湖", "港墘", "文德", "內湖", "大湖公園", "葫洲",
-                "東湖", "南港軟體園區","南港展覽館"],
-    "淡水信義線": ["象山", "台北101", "信義安和", "大安", "大安森林公園", "東門", "中正紀念堂", "台大醫院", "台北車站",
-                "中山", "雙連", "民權西路", "圓山", "劍潭", "士林", "芝山", "明德", "石牌", "唭哩岸", "奇岩", "北投", 
-                "新北投", "復興崗", "忠義", "關渡", "竹圍", "紅樹林", "淡水"],
-    "松山新店線": ["新店", "新店區公所", "七張", "小碧潭", "大坪林", "景美", "萬隆", "公館", "台電大樓", "古亭", 
-                "中正紀念堂", "小南門", "西門", "北門", "中山", "松江南京", "南京復興", "台北小巨蛋", "南京三民", "松山"],
-    "中和新蘆線": ["南勢角", "景安", "永安市場", "頂溪", "古亭", "東門", "忠孝新生", "松江南京", "行天宮", "中山國小", 
-                "民權西路", "大橋頭", "台北橋", "菜寮", "三重", "先嗇宮", "頭前庄", "新莊", "輔大", "丹鳳", "迴龍", 
-                "三重國小", "三和國中", "徐匯中學", "三民高中", "蘆洲"],
-    "板南線": ["頂埔", "永寧", "土城", "海山", "亞東醫院", "府中", "板橋", "新埔", "江子翠", "龍山寺", "西門", "台北車站",
-                "善導寺", "忠孝新生", "忠孝復興", "忠孝敦化", "國父紀念館", "市政府", "永春", "後山埤", "昆陽", "南港", 
-                "南港展覽館"],
-    "環狀線": ["大坪林", "十四張", "秀朗橋", "景平", "景安", "中和", "橋和", "中原", "板新", "板橋", "新埔民生", "頭前庄",
-                "幸福", "新北產業園區"]
-}
+STATION_LINE_ORIENTATIONS = {"動物園": [{"orientation": 0, "line": "文湖線", "direction": 1}, {"orientation": 180, "line": "文湖線", "direction": -1}],
+                             "大安": [{"orientation": 0, "line": "文湖線", "direction": 1}, {"orientation": 180, "line": "文湖線", "direction": -1}, 
+                                     {"orientation": 0, "line": "淡水信義線", "direction": 1}, {"orientation": 180, "line": "淡水信義線", "direction": -1}],
+                             "木柵": [{"orientation": 0, "line": "文湖線", "direction": 1}, {"orientation": 180, "line": "文湖線", "direction": -1}],
+                             "忠孝復興": [{"orientation": 0, "line": "文湖線", "direction": 1}, {"orientation": 180, "line": "文湖線", "direction": -1}, 
+                                     {"orientation": 0, "line": "板南線", "direction": 1}, {"orientation": 180, "line": "板南線", "direction": -1}],
+                             }
 
 def get_station_info(filename):
 
@@ -62,9 +40,10 @@ class User:
         self.location = [0, 0]
         self.orientation = 0
         self.state = USER_STATE["ON_MRT"]
-        self.current_station = ""
-        self.last_station = ""
+        self.current_station = {}
+        self.last_station = {}
         self.current_line = ""
+        self.line_direction = 1
         self.time_since_last_station = 0
         # self.audio_cnt = 0
         # self.audios = []
@@ -100,19 +79,21 @@ class MRTLocationService:
 
         recognized_station = speech_recognition(self.user, audio_file, self.stations_info)
 
-        recognize_success = recognized_station != None
-        same_station = self.user.current_station != recognized_station
-
         # print("83:", recognize_success, same_station, self.user.in_current_line(recognized_station), self.user)
 
-        if recognize_success and same_station:
+        if recognized_station:
             self.user.location = [recognized_station["lon"], recognized_station["lat"]]
             self.user.last_station = self.user.current_station
-            self.user.current_station = recognized_station["station_name_tw"]
-        
+            self.user.current_station = recognized_station
+            if recognized_station["station_name_tw"] not in TRANSPORT_STATIONS:
+                self.user.current_line = LINES_COLOR[recognized_station["line_name"]]
+            else:
+                self.user.current_line = LINES_COLOR[self.user.last_station["line_name"]] if self.user.last_station else ""
+                
         print("================")
         print("Speech Recognition Result: ")
-        print("recognized station: ", recognized_station["station_name_tw"])
+        if recognized_station:
+            print("recognized station: ", recognized_station["station_name_tw"]) 
         print("user location: ", self.user.location)
         if self.user.state == 0:
             print("user state: In Station")
@@ -135,8 +116,8 @@ class MRTLocationService:
         self.user.state = USER_STATE["IN_STATION"] if scene_recognition_result else USER_STATE["ON_MRT"]
         print("IN Station: ", scene_recognition_result)
         color_recognition_result = None
-        if self.user.state == USER_STATE["IN_STATION"] and self.user.current_station in TRANSPORT_STATIONS:
-            color_recognition_result = color_recognition(image_file, TRANSPORT_STATIONS[self.user.current_station])
+        if self.user.state == USER_STATE["IN_STATION"] and self.user.current_station["station_name_tw"] in TRANSPORT_STATIONS:
+            color_recognition_result = color_recognition(image_file, TRANSPORT_STATIONS[self.user.current_station["station_name_tw"]])
             self.user.current_line = color_recognition_result[0]        
             print("Dominant Color: ", color_recognition_result)
         
@@ -155,5 +136,21 @@ class MRTLocationService:
     
 
     def received_user_orientation_service(self, orientation):
+        print("received", orientation)
+        if self.user.state == USER_STATE["ON_MRT"]:
+            pass
+        
+        orientations = STATION_LINE_ORIENTATIONS["動物園"]
+        orientation = int(orientation + 180) % 360
 
-        pass
+
+        print("before orientation:", self.user.line_direction, " ", self.user.current_line)
+
+        for ori in orientations:
+            bound = [( ori["orientation"] - 60 + 360 ) % 360, ( ori["orientation"] + 60 + 360 ) % 360]
+            if bound[0] <= orientation <= bound[1] and self.user.current_line == LINES_COLOR[ori["line"]]:
+                self.user.line_direction = ori["direction"]
+                break        
+                
+        print("oriented user:", self.user.line_direction, " ", self.user.current_line)
+        return jsonify(self.user.location)

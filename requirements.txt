@@ -8,3 +8,6 @@ SpeechRecognition
 flask-cors
 SoundFile
 pydub
+tensorflow
+Pillow
+opencv-python

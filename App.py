@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-
+import json
 import csv
 import noisereduce as nr
 import librosa
@@ -88,12 +88,13 @@ def receivedImage():
 
 @app.route('/bearing', methods=['POST'])
 def receivedBearing():
-    # Todo
-    print("received bearing: ", request.data.bearing)
-    return service.received_user_orientation_service(request.data.bearing)
+    # Todo b'{"bearing":-0.6702646970416513}'
+    print("request data:", request.data.decode('UTF-8'))
+    bearing = json.loads(request.data.decode('UTF-8'))['bearing']
+    return service.received_user_orientation_service(bearing)
 
-# if __name__ == '__main__':
+if __name__ == '__main__':
     # app.run(host="0.0.0.0", port=8989,ssl_context=('adhoc'))
-    # app.debug = True
-    # app.run()
+    app.debug = True
+    app.run()
         
