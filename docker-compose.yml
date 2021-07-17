@@ -7,3 +7,5 @@ services:
     # restart: always
     ports:
       - 8989:8989
+    volumes:
+      - .:/app
