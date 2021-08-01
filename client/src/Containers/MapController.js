@@ -13,7 +13,7 @@ mapboxgl.accessToken =
 const MapController = () => {
   const mapContainer = useRef(null);
   const map = useRef(null);
-  const { lat, lng, sendAudio, sendPic, sendBearing } = useRoute();
+  const { lat, lng, id, sendAudio, sendPic, sendBearing} = useRoute();
   const [marker, setMarker] = useState(null);
   const [zoom, setZoom] = useState(13);
   const { bearing, orientation } = useSensor();

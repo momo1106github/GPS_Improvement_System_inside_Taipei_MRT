@@ -1,60 +1,86 @@
 import axios from "axios";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const useRoute = () => {
   const [lng, setLng] = useState(121.573145);
   const [lat, setLat] = useState(24.998241);
-  const development = process.env.NODE_ENV !== 'production'  
-  const url = (development) ? "http://localhost:5000/audio":"https://obscure-spire-00084.herokuapp.com/audio";
-  // console.log("development: ", development);
+  const [id, setId] = useState();
+  const development = process.env.NODE_ENV !== "production";
+  const token = Buffer.from(`111:${id}`, "utf8").toString("base64");
+  const getUserId = async () => {
+    const { data } = await axios.get("/id");
+    console.log("getUserId", data);
+    setId(data);
+  };
 
   const sendAudio = async (blob) => {
     let formData = new FormData();
     formData.append("wav_file", blob.blob);
     // console.log(blob);
+
+    if (!id) await getUserId();
+    console.log("id:", id);
     const result = await axios.post("/audio", formData, {
       headers: {
         Accept: "*/*",
         "Content-Type": "multipart/form-data",
+        Authorization: `Basic ${Buffer.from(`111:${id}`, "utf8").toString(
+          "base64"
+        )}`,
       },
     });
-    
+
     setLng(parseFloat(result.data[0]));
     setLat(parseFloat(result.data[1]));
   };
 
-  const sendPic = async (imgSrc) =>{
+  const sendPic = async (imgSrc) => {
+    if (!id) await getUserId();
     let formData = new FormData();
     const file = dataURLtoFile(imgSrc);
-    formData.append('image_file', file);
+    formData.append("image_file", file);
+    formData.append("user_id", id);
     // console.log(formData.get("image_file"));
     const result = await axios.post("/image", formData, {
       headers: {
-        'Content-Type': `multipart/form-data;`,
-      }
+        "Content-Type": "multipart/form-data",
+        Authorization: `Basic ${Buffer.from(`111:${id}`, "utf8").toString(
+          "base64"
+        )}`,
+      },
     });
     console.log(result);
-  }
+  };
 
-  const sendBearing = async (bearing) =>{
+  const sendBearing = async (bearing) => {
+    if (!id) await getUserId();
     console.log("send Bearing", bearing);
-    const result = await axios.post("/bearing", { bearing: bearing });
+    const result = await axios.post(
+      "/bearing",
+      { bearing: bearing },
+      {
+        headers: {
+          Authorization: `Basic ${Buffer.from(`111:${id}`, "utf8").toString(
+            "base64"
+          )}`,
+        },
+      }
+    );
     console.log(result);
-  }
-
+  };
 
   const dataURLtoFile = (dataurl, filename) => {
-    const arr = dataurl.split(',')
-    const mime = arr[0].match(/:(.*?);/)[1]
-    const bstr = atob(arr[1])
-    let n = bstr.length
-    const u8arr = new Uint8Array(n)
+    const arr = dataurl.split(",");
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
     while (n) {
-      u8arr[n - 1] = bstr.charCodeAt(n - 1)
-      n -= 1 // to make eslint happy
+      u8arr[n - 1] = bstr.charCodeAt(n - 1);
+      n -= 1; // to make eslint happy
     }
-    return new File([u8arr], filename, { type: mime })
-  }
+    return new File([u8arr], filename, { type: mime });
+  };
 
   return { lng, lat, sendAudio, sendPic, sendBearing };
 };

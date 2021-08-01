@@ -27,17 +27,15 @@ service = MRTLocationService.MRTLocationService()
 def hello():
     return app.send_static_file("index.html")
 
-@app.route('/orientation', methods=['POST'])
-def receivedOrintation():
-    # orientation = request.body.orientation
-    # Add Color recognition
-    pass
+@app.route('/id', methods=['GET'])
+def createUser():
+    return str(service.addUser())
 
 @app.route('/audio', methods=['POST'])
 def receivedAudioClip():
     print("receivedAudioClip:")
-    return service.received_audio_clip_service(request.files, 'wav_file')
-
+    print(request.authorization)
+    return service.received_audio_clip_service('0', request.files, 'wav_file')
 
     # if user.state = USER_STATE["IN_STATION"]:
     #     return "Not in MRT"
