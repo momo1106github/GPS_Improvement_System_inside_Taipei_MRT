@@ -63,12 +63,12 @@ class MRTLocationService:
         self.stations_info = get_station_info('./station_info.csv')
     
     def addUser(self):
-        user_id = uuid.uuid4()
+        user_id = str(uuid.uuid4())
         self.users[user_id] = User() 
         return user_id
 
     def received_audio_clip_service(self, user_id, files, file_key):
-        
+        print("users and userid: ", self.users, user_id)
         if self.users[user_id].state == USER_STATE["IN_STATION"]:
             print("User in station, no Speech Recognition Service")
             return jsonify(self.users[user_id].location)

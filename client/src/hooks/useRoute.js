@@ -24,14 +24,13 @@ const useRoute = () => {
   const sendAudio = async (blob) => {
     let formData = new FormData();
     formData.append("wav_file", blob.blob);
-    // console.log(blob);
 
     console.log("id:", id);
     const result = await axios.post("/audio", formData, {
       headers: {
         Accept: "*/*",
         "Content-Type": "multipart/form-data",
-        Authorization: `Basic ${Buffer.from(`111:${id}`, "utf8").toString(
+        "Authorization": `Basic ${Buffer.from(`111:${id}`, "utf8").toString(
           "base64"
         )}`,
       },
@@ -45,12 +44,12 @@ const useRoute = () => {
     let formData = new FormData();
     const file = dataURLtoFile(imgSrc);
     formData.append("image_file", file);
-    formData.append("user_id", id);
+    
     // console.log(formData.get("image_file"));
     const result = await axios.post("/image", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
-        Authorization: `Basic ${Buffer.from(`111:${id}`, "utf8").toString(
+        "Authorization": `Basic ${Buffer.from(`111:${id}`, "utf8").toString(
           "base64"
         )}`,
       },
@@ -66,7 +65,7 @@ const useRoute = () => {
       { bearing: bearing },
       {
         headers: {
-          Authorization: `Basic ${Buffer.from(`111:${id}`, "utf8").toString(
+          "Authorization": `Basic ${Buffer.from(`111:${id}`, "utf8").toString(
             "base64"
           )}`,
         },
