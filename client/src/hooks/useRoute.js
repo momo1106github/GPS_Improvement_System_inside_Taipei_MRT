@@ -4,21 +4,28 @@ import { useState, useEffect } from "react";
 const useRoute = () => {
   const [lng, setLng] = useState(121.573145);
   const [lat, setLat] = useState(24.998241);
-  const [id, setId] = useState();
   const development = process.env.NODE_ENV !== "production";
-  const token = Buffer.from(`111:${id}`, "utf8").toString("base64");
   const getUserId = async () => {
     const { data } = await axios.get("/id");
     console.log("getUserId", data);
-    setId(data);
+    id = data;
   };
+  useEffect(()=>{
+    const getUserId = async () => {
+      const { data } = await axios.get("/id");
+      console.log("getUserId", data);
+      id = data;
+    };
+    getUserId();
+  }, []);
+
+  let id = null;
 
   const sendAudio = async (blob) => {
     let formData = new FormData();
     formData.append("wav_file", blob.blob);
     // console.log(blob);
 
-    if (!id) await getUserId();
     console.log("id:", id);
     const result = await axios.post("/audio", formData, {
       headers: {
@@ -35,7 +42,6 @@ const useRoute = () => {
   };
 
   const sendPic = async (imgSrc) => {
-    if (!id) await getUserId();
     let formData = new FormData();
     const file = dataURLtoFile(imgSrc);
     formData.append("image_file", file);
@@ -82,6 +88,6 @@ const useRoute = () => {
     return new File([u8arr], filename, { type: mime });
   };
 
-  return { lng, lat, sendAudio, sendPic, sendBearing };
+  return { lng, lat, sendAudio, sendPic, sendBearing, getUserId };
 };
 export default useRoute;
