@@ -10,7 +10,7 @@ const useRoute = () => {
     console.log("getUserId", data);
     id = data;
   };
-  useEffect(()=>{
+  useEffect(() => {
     const getUserId = async () => {
       const { data } = await axios.get("/id");
       console.log("getUserId", data);
@@ -30,7 +30,7 @@ const useRoute = () => {
       headers: {
         Accept: "*/*",
         "Content-Type": "multipart/form-data",
-        "Authorization": `Basic ${Buffer.from(`111:${id}`, "utf8").toString(
+        Authorization: `Basic ${Buffer.from(`111:${id}`, "utf8").toString(
           "base64"
         )}`,
       },
@@ -44,12 +44,12 @@ const useRoute = () => {
     let formData = new FormData();
     const file = dataURLtoFile(imgSrc);
     formData.append("image_file", file);
-    
+
     // console.log(formData.get("image_file"));
     const result = await axios.post("/image", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
-        "Authorization": `Basic ${Buffer.from(`111:${id}`, "utf8").toString(
+        Authorization: `Basic ${Buffer.from(`111:${id}`, "utf8").toString(
           "base64"
         )}`,
       },
@@ -60,12 +60,13 @@ const useRoute = () => {
   const sendBearing = async (bearing) => {
     if (!id) await getUserId();
     console.log("send Bearing", bearing);
+    
     const result = await axios.post(
       "/bearing",
       { bearing: bearing },
       {
         headers: {
-          "Authorization": `Basic ${Buffer.from(`111:${id}`, "utf8").toString(
+          Authorization: `Basic ${Buffer.from(`111:${id}`, "utf8").toString(
             "base64"
           )}`,
         },
@@ -86,6 +87,8 @@ const useRoute = () => {
     }
     return new File([u8arr], filename, { type: mime });
   };
+
+  
 
   return { lng, lat, sendAudio, sendPic, sendBearing, getUserId };
 };

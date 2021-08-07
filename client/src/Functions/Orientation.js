@@ -13,7 +13,7 @@ const orientation = () => {
       sensor.addEventListener("reading", () => {
         const euler = new THREE.Euler();
         const quaternion = new THREE.Quaternion(...sensor.quaternion);
-        console.log(euler.setFromQuaternion(quaternion, "XYZ").z);
+        // console.log(euler.setFromQuaternion(quaternion, "XYZ").z);
         // map.setBearing(45 * euler.setFromQuaternion(quaternion, "XYZ").z);
       });
       sensor.addEventListener("error", (event) => {
