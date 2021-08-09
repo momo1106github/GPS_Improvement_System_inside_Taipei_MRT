@@ -19,14 +19,7 @@ const MapController = () => {
   const { bearing, orientation } = useSensor();
   const [lastBearing, setLastBearing] = useState(0);
   const bearingThreshhold = 10;
-  useEffect(() => {
-    setInterval(() => {
-      saveData(bearing);
-    }, 3000);
-    setInterval(() => {
-      downloadData();
-    }, 6000);
-  }, []);
+  
   // const onMove = () => {
   //   setLng(map.current.getCenter().lng.toFixed(4));
   //   setLat(map.current.getCenter().lat.toFixed(4));
@@ -71,32 +64,6 @@ const MapController = () => {
     );
   });
 
-  const saveData = (bearing) => {
-    let data = JSON.parse(localStorage.getItem("data") || "[]");
-    const nowData = {
-      bearing: bearing,
-      time: Date.now(),
-      location: [lng, lat],
-    };
-
-    data = [...data, nowData];
-    localStorage.setItem("data", JSON.stringify(data));
-    console.log("localstorage:", data);
-  };
-
-  const downloadData = () => {
-    let data = localStorage.getItem("data");
-    let downloadData = new Blob([data], { type: "text/csv" });
-    let csvURL = window.URL.createObjectURL(downloadData);
-    let tempLink = document.createElement("a");
-    tempLink.href = csvURL;
-    let count = localStorage.getItem("count") || "0";
-    count = parseInt(count) + 1;
-    localStorage.setItem("count", count);
-    tempLink.setAttribute("download", `${count}.csv`);
-    tempLink.click();
-    localStorage.setItem("data", []);
-  };
   return (
     <>
       <Map mapContainer={mapContainer} lng={lng} lat={lat} zoom={zoom}></Map>
