@@ -29,6 +29,21 @@
 
 承接上面，此時僅知道使用者欲搭乘的線路，但無法得知搭乘的方向，因此我們透過讀取使用者裝置內的三軸加速感應器的讀數，得到使用者此時面對的方位，再對應到已知捷運站各個線路相對應的方位表，藉此判斷使用者欲搭乘車廂行駛的方向。
 
+
+### 測試 Testing
+
+資料連結： [link](https://drive.google.com/drive/folders/1OgLQpNjG0bWfe8qfvyGSzIl5n7Z6d7b-?usp=sharing)
+
+測試結果：
+- 語音辨識：
+  - 差，捷運雜音太大，導致廣播聲音過小，偵測不出車站名稱
+- 場景辨識：
+  - 優，手動測試大部分照片都有辨別出捷運上與車站內
+- 顏色辨識：
+  - 佳，只有特別挑選的圖片才有辨識出顏色
+- 方位辨識：
+  - 優，經過測試方位辨識非常精準
+
 ## Welcome to GitHub Pages
 
 You can use the [editor on GitHub](https://github.com/momo1106github/GPS_Improvement_System_inside_Taipei_MRT/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
