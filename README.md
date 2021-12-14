@@ -7,6 +7,7 @@ This is a college undergraduate research project contributed by
 張翔文
 
 ## What Are We Doing
+[Introduction](https://momo1106github.github.io/GPS_Improvement_System_inside_Taipei_MRT/)
 
 [google_docs link](https://docs.google.com/presentation/d/1AcaNFsT5V_fUxMzoXNRQDlywe_yVKwAkQQhU3umuwLE/edit?usp=sharing)
 
